@@ -2,7 +2,7 @@ FROM public.ecr.aws/docker/library/r-base AS builder
 
 # Install build dependencies
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libssl-dev libcurl4-openssl-dev libxml2-dev libnetcdf-dev pandoc python3.11 python3.11-dev python3-pip \
+    && apt-get install -y --no-install-recommends libglpk40 libssl-dev libcurl4-openssl-dev libxml2-dev libnetcdf-dev pandoc python3.11 python3.11-dev python3-pip \
     && rm -rf /var/lib/apt/lists/*
 
 # Install R packages from CRAN
