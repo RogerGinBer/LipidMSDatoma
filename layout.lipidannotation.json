@@ -18,8 +18,8 @@
           }
         },
         {
-          "key": "polarity",
-          "label": "Ion polarity",
+          "key": "ion_mode",
+          "label": "Ion polarity mode",
           "type": "Dropdown",
           "model": "positive",
           "bind": {
