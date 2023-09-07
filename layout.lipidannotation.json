@@ -34,7 +34,7 @@
   ],
   "inputs": [
     {
-      "key": "input_file",
+      "key": "input_files",
       "label": "Input RHermesExp (RDS) or MGF file",
       "model": [],
       "shownExtensions": [".rds", ".RDS", ".mgf", ".MGF"]

@@ -4,7 +4,7 @@ author: "Vignette Author"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 params:
-    input_file: "./Padilla_Lipid_C18pos_Hermes.rds"
+    input_files: "./Padilla_Lipid_C18pos_Hermes.rds"
     ion_mode: "positive"
     ppm_error: 10
 ---
@@ -151,8 +151,8 @@ exportMSPv2 <- function(struct, id, file, whichSpec = NA,extension=".msp") { # s
 ``` {r}
 #### ROUTINE START ####
 
-if(any(tools::file_ext(params$input_file) == "rds")){
-    rds_path <- params$input_file[which(tools::file_ext(params$input_file) == "rds")[1]] ##Only one RHermesExp can be processed for now
+if(any(tools::file_ext(params$input_files) == "rds")){
+    rds_path <- params$input_files[which(tools::file_ext(params$input_files) == "rds")[1]] ##Only one RHermesExp can be processed for now
     myHermes <- readRDS(rds_path)
     if(!is(myHermes, "RHermesExp")){stop ("Invalid object inside RDS, must be RHermesExp")}
     exportMSPv2(myHermes, 1, "./spectra", extension=".mgf")
