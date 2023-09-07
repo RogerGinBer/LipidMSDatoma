@@ -1,0 +1,43 @@
+{
+  "parameters": [
+    {
+      "label": "Parameters",
+      "parameters": [
+        {
+          "key": "ppm_error",
+          "label": "Mass error (ppm)",
+          "type": "InputNumber",
+          "model": "10",
+          "bind": {
+            "step" : 0.01,
+            "min" : 0,
+            "max" : 50,
+            "minFractionDigits" : 0,
+            "maxFractionDigits" : 2
+
+          }
+        },
+        {
+          "key": "polarity",
+          "label": "Ion polarity",
+          "type": "Dropdown",
+          "model": "positive",
+          "bind": {
+            "options" : [
+              {"label": "Positive Mode (+)", "value": "positive"},
+              {"label": "Negative Mode (-)", "value": "negative"}
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "key": "input_file",
+      "label": "Input RHermesExp (RDS) or MGF file",
+      "model": [],
+      "shownExtensions": [".rds", ".RDS", ".mgf", ".MGF"]
+    }
+  ]
+}

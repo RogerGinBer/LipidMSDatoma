@@ -1,0 +1,21 @@
+tasks:
+  lipidannotation:
+    type: RMarkdown
+    config:
+      script: annotateLipids.Rmd
+      output_folder: Output
+      upload_output_folder: false
+      upload_output_zip: false
+      zip_filename: Output
+      input_mapping:
+        input_files: input_files
+    autoscaling:
+      ram:
+        base: 10240
+        vcpu_multiplier: 6144
+        max: 389120
+      vcpu:
+        base: 2
+        max: 96
+        density:
+          fast: 999
