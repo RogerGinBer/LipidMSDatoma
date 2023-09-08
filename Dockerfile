@@ -45,7 +45,7 @@ FROM public.ecr.aws/docker/library/r-base
 
 # Install runtime dependencies
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends pandoc libxml2 libnetcdf19 python3.11 procps \
+    && apt-get install -y --no-install-recommends libglpk40 pandoc libxml2 libnetcdf19 python3.11 procps \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy R packages from the builder image
