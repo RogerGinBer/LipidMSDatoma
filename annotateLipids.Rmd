@@ -163,8 +163,8 @@ if(any(tools::file_ext(params$input_files) == "rds")){
 if(params$ion_mode == "positive"){
     #### POSITIVE ION ####
     idpos <- idPOS(r,
-               ppm_precursor = ppm_error,
-               ppm_products = ppm_error,
+               ppm_precursor = params$ppm_error,
+               ppm_products = params$ppm_error,
                rttol = 1,
                coelCutoff = 0.0,
                lipidClasses = c("MG", "LPC", "LPE", "PC", "PCo", 
@@ -183,8 +183,8 @@ if(params$ion_mode == "positive"){
 } else {
     #### NEGATIVE ION ####
     idneg <- idNEG(r,
-                   ppm_precursor = ppm_error,
-                   ppm_products = ppm_error,
+                   ppm_precursor = params$ppm_error,
+                   ppm_products = params$ppm_error,
                    rttol = 1,
                    coelCutoff = 0.0,
                    lipidClasses = c("FA", "FAHFA", "LPC", "LPE", "LPG", "LPI",
