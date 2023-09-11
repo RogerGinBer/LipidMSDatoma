@@ -4,7 +4,7 @@ tasks:
     config:
       script: annotateLipids.Rmd
       output_folder: Output
-      upload_output_folder: false
+      upload_output_folder: true
       upload_output_zip: false
       zip_filename: Output
       input_mapping:
