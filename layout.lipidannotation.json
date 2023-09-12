@@ -35,9 +35,9 @@
   "inputs": [
     {
       "key": "input_files",
-      "label": "Input RHermesExp (RDS) or MGF file",
+      "label": "Input RHermesExp (RDS) with MS2 data processed",
       "model": [],
-      "shownExtensions": [".rds", ".RDS", ".mgf", ".MGF"]
+      "shownExtensions": [".rds", ".RDS"]
     }
   ]
 }
