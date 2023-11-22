@@ -58,4 +58,4 @@ COPY datomaconfig.yml /app/
 COPY annotateLipids.Rmd /app/
 
 WORKDIR /app
-ENTRYPOINT [ "python3.11", "-m", "datoma_jobrunner.entrypoint" ]
+ENTRYPOINT [ "python3.11", "-m", "datoma_jobrunner" ]
