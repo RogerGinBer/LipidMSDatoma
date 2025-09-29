@@ -37,9 +37,14 @@ RUN install2.r --error \
 # Install Bioconductor packages
 RUN Rscript -e 'BiocManager::install(c("MSnbase"))'
 
-# Install R application packages
-RUN Rscript -e 'pak::pkg_install(c("RogerGinBer/RHermes", "maialba3/LipidMS"))'
+# Install remotes first
+RUN Rscript -e "install.packages('remotes', repos='https://cloud.r-project.org')"
 
+# Install slickR from GitHub
+RUN Rscript -e "remotes::install_github('yonicd/slickR')"
+
+# Now install your packages
+RUN Rscript -e "pak::pkg_install(c('RogerGinBer/RHermes', 'maialba3/LipidMS'))"
 
 # Install Python packages
 RUN python3.11 -m pip install \
