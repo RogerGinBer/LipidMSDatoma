@@ -1,4 +1,4 @@
-FROM public.ecr.aws/docker/library/r-base AS builder
+FROM public.ecr.aws/docker/library/r-base:4.3.1 AS builder
 
 # Install build dependencies
 RUN apt-get update \
@@ -55,7 +55,7 @@ RUN python3.11 -m pip install \
     aiofile \
     gql
 
-FROM public.ecr.aws/docker/library/r-base
+FROM public.ecr.aws/docker/library/r-base:4.3.1
 
 # Install runtime dependencies
 RUN apt-get update \
