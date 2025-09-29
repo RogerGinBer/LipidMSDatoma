@@ -2,8 +2,8 @@ tasks:
   lipidannotation:
     type: RMarkdown
     config:
-      script: annotateLipids.Rmd
-      output_folder: Output
+      script: /app/annotateLipids.Rmd
+      output_folder: /app/Output
       upload_output_folder: true
       upload_output_zip: false
       zip_filename: Output

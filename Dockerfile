@@ -2,8 +2,24 @@ FROM public.ecr.aws/docker/library/r-base AS builder
 
 # Install build dependencies
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libglpk40 libssl-dev libcurl4-openssl-dev libxml2-dev libnetcdf-dev pandoc python3.11 python3.11-dev python3-pip \
+    && apt-get install -y --no-install-recommends libglpk40 libssl-dev libcurl4-openssl-dev libxml2-dev libnetcdf-dev pandoc wget \
     && rm -rf /var/lib/apt/lists/*
+
+# Download and install Python 3.11
+RUN wget https://www.python.org/ftp/python/3.11.0/Python-3.11.0.tar.xz \
+    && tar -xf Python-3.11.0.tar.xz \
+    && cd Python-3.11.0 \
+    && ./configure --enable-optimizations \
+    && make -j$(nproc) \
+    && make altinstall \
+    && cd .. \
+    && rm -rf Python-3.11.0*
+
+# Install pip for Python 3.11
+RUN wget https://bootstrap.pypa.io/get-pip.py \
+    && python3.11 get-pip.py \
+    && rm get-pip.py
+
 
 # Install R packages from CRAN
 RUN install2.r --error \
@@ -24,7 +40,6 @@ RUN Rscript -e 'BiocManager::install(c("MSnbase"))'
 # Install R application packages
 RUN Rscript -e 'pak::pkg_install(c("RogerGinBer/RHermes", "maialba3/LipidMS"))'
 
-ARG PIP_EXTRA_INDEX_URL
 
 # Install Python packages
 RUN python3.11 -m pip install \
@@ -38,24 +53,47 @@ RUN python3.11 -m pip install \
     s3fs \
     aiohttp \
     aiofile \
-    gql \
-    datoma-jobrunner
+    gql
 
 FROM public.ecr.aws/docker/library/r-base
 
 # Install runtime dependencies
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libglpk40 pandoc libxml2 libnetcdf19 python3.11 procps \
+    && apt-get install -y --no-install-recommends libglpk40 pandoc libxml2 libnetcdf19 wget procps \
     && rm -rf /var/lib/apt/lists/*
+
+# Download and install Python 3.11
+RUN wget https://www.python.org/ftp/python/3.11.0/Python-3.11.0.tar.xz \
+    && tar -xf Python-3.11.0.tar.xz \
+    && cd Python-3.11.0 \
+    && ./configure --enable-optimizations --with-ensurepip=install \
+    && make -j$(nproc) \
+    && make altinstall \
+    && cd .. \
+    && rm -rf Python-3.11.0*
+
+# Install pip for Python 3.11
+RUN wget https://bootstrap.pypa.io/get-pip.py \
+&& python3.11 get-pip.py \
+&& rm get-pip.py
+
 
 # Copy R packages from the builder image
 COPY --from=builder /usr/local/lib/R/site-library/ /usr/local/lib/R/site-library/
 
 # Copy Python packages from the builder image
-COPY --from=builder /usr/local/lib/python3.11/dist-packages/ /usr/local/lib/python3.11/dist-packages/
+COPY --from=builder /usr/local/lib/python3.11/site-packages/ /usr/local/lib/python3.11/site-packages/
 
 COPY datomaconfig.yml /app/
 COPY annotateLipids.Rmd /app/
 
+# Necessary files for running your tool on the Datoma infrastructure
+COPY install_jobrunner.py /app/install_jobrunner.py
+RUN chmod +x /app/install_jobrunner.py
+COPY install_jobrunner_and_run.sh /app/install_jobrunner_and_run.sh
+RUN chmod +x /app/install_jobrunner_and_run.sh
+
+RUN mkdir /app/Output
+
 WORKDIR /app
-ENTRYPOINT [ "python3.11", "-m", "datoma_jobrunner" ]
+ENTRYPOINT ["/bin/bash" ,"/app/install_jobrunner_and_run.sh" ]
