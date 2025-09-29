@@ -59,7 +59,7 @@ FROM public.ecr.aws/docker/library/r-base
 
 # Install runtime dependencies
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libglpk40 pandoc libxml2 libnetcdf22 wget procps \
+    && apt-get install -y --no-install-recommends libssl-dev libcurl4-openssl-dev libsqlite3-dev libglpk40 pandoc libxml2 libnetcdf22 wget procps \
     && rm -rf /var/lib/apt/lists/*
 
 # Download and install Python 3.11
