@@ -1,3 +1,10 @@
+tool:
+  compute:
+    arm64:
+      enable: true
+      spot: true
+      instance_types:
+        - m6g
 tasks:
   lipidannotation:
     type: RMarkdown
@@ -11,8 +18,7 @@ tasks:
         input_files: input_files
     autoscaling:
       ram:
-        base: 10240
-        vcpu_multiplier: 6144
+        base: 7200
         max: 389120
       vcpu:
         base: 2
