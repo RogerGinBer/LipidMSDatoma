@@ -29,6 +29,7 @@ params:
 
 ```{r}
 files <- data.frame(sample = params$input_files)
+metadata <- read.csv(params$metadata)
 metadata <- merge(metadata, files, by = "sample")
   
 ncores <- min(length(params$input_files), parallel::detectCores())
