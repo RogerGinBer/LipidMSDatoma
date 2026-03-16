@@ -28,6 +28,8 @@ params:
 
 
 ```{r}
+library(LipidMS)
+
 files <- data.frame(sample = basename(params$input_files), path = params$input_files)
 metadata <- read.csv(params$metadata)
 metadata <- merge(metadata, files, by = "sample")

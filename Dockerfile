@@ -38,7 +38,7 @@ RUN install2.r --error \
 RUN Rscript -e 'BiocManager::install(c("MSnbase"))'
 
 # Install remotes first
-RUN Rscript -e "install.packages('remotes', repos='https://cloud.r-project.org')"
+RUN Rscript -e "install.packages(c('remotes', 'writexl'), repos='https://cloud.r-project.org')"
 
 # Install slickR from GitHub
 RUN Rscript -e "remotes::install_github('yonicd/slickR')"
