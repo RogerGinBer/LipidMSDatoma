@@ -51,3 +51,24 @@ tasks:
           - value: 1
             inputs:
               - input_files
+
+  fameta:
+    type: RMarkdown
+    config:
+      script: /app/workflow_FAMetA.Rmd
+      output_folder: /app/Output
+      upload_output_folder: true
+      upload_output_zip: false
+      zip_filename: Output
+      input_mapping:
+        input_table: input_table
+    autoscaling:
+      ram:
+        base: 7500
+        max: 250000
+        multipliers:
+          vcpu: 3800
+      vcpu:
+        base: 2
+        max: 64
+

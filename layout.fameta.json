@@ -1,0 +1,42 @@
+{
+  "parameters": [
+    {
+      "label": "Parameters",
+      "parameters": [
+        {
+          "key": "dmzprecursor",
+          "label": "Precursor mass error (ppm)",
+          "type": "InputNumber",
+          "model": 10,
+          "bind": {
+            "min" : 0,
+            "max" : 50,
+            "minFractionDigits" : 0,
+            "maxFractionDigits" : 2
+
+          }
+        },
+        {
+          "key": "polarity",
+          "label": "Ion polarity mode",
+          "type": "Dropdown",
+          "model": "positive",
+          "bind": {
+            "options" : [
+              {"label": "Positive Mode (+)", "value": "positive"},
+              {"label": "Negative Mode (-)", "value": "negative"}
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "inputs": [
+      {
+      "key": "input_table",
+      "label": "Input table (see Datoma Examples for format)",
+      "model": [],
+      "shownExtensions": [".csv"]
+    }
+  ]
+}

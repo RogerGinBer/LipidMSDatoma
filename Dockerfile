@@ -44,7 +44,7 @@ RUN Rscript -e "install.packages('remotes', repos='https://cloud.r-project.org')
 RUN Rscript -e "remotes::install_github('yonicd/slickR')"
 
 # Now install your packages
-RUN Rscript -e "pak::pkg_install(c('RogerGinBer/RHermes', 'maialba3/LipidMS'))"
+RUN Rscript -e "pak::pkg_install(c('RogerGinBer/RHermes', 'maialba3/LipidMS', 'maialba3/FAMetA'))"
 
 # Install Python packages
 RUN python3.11 -m pip install \
