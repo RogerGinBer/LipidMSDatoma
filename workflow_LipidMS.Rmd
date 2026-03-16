@@ -1,289 +1,137 @@
 ---
-title: "LipidMS"
-author: "Vignette Author"
-date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+title: "LipidMSdatoma"
+author: "Maribel Alcoriza"
+date: "2026-03-16"
+output: html_document
 params:
-    input_files: "./Padilla_Lipid_C18pos_Hermes.rds"
-    ion_mode: "positive"
-    ppm_error: 10
+    polarity: "positive"
+    minpeak_ms1: 5
+    minpeak_ms2: 4
+    drtminpeak_ms1: 5
+    drtminpeak_ms2: 5
+    recurs_ms1: 5
+    recurs_ms2: 10
+    sb: 3
+    sn: 3
+    minint_ms1: 1000
+    minint_ms2: 500
+    drtgroup: 15
+    minsamplesfracgroup: 0.25
+    dmzprecursor: 5
+    dmzproducts: 10
+    rttol: 6
+    coelcutoff: 0.7
+    input_files: "test.mZXML"
+    metadata: "metadata.csv
+    
 ---
 
-```{r setup, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
-)
-```
 
+```{r}
+files <- data.frame(sample = files)
+metadata <- merge(metadata, files, by = "sample")
+  
+ncores <- min(length(input_files), parallel::detectCores())
 
-``` {r}
-library(RHermes)
-library(LipidMS)
-library(MSnbase)
-
-#### extra? fucntions ####
-
-MGFToLipidMS <- function(file){
-    f <- MSnbase::readMgfData(filename = file)
-    ftData <- f@featureData@data
-    ftData$RTINSECONDS <- as.numeric(ftData$RTINSECONDS)
-    ftData$PEPMASS <- as.numeric(ftData$PEPMASS)
-    ftData$PEPMASSINT <- as.numeric(ftData$PEPMASSINT)
-    polarity <- ifelse(any(grepl("\\+", ftData$CHARGE)), "positive", "negative")
-    
-    # Create RawMS2 data
-    rt <- rtime(f)
-    rdr <- order(rt,decreasing = F)
-    rt <- rt[rdr]
-    int <- intensity(f)
-    int <- int[rdr]
-    mzs <- mz(f)
-    mzs <- mzs[rdr]
-    scanN <- sapply(mzs, length)
-    rawMS2 <- data.frame(RT = rep(rt, times = scanN),
-                         int = unlist(int),
-                         mz = unlist(mzs),
-                         peakID = rep(paste0("MS2_", names(rt)), times = scanN),
-                         Scan = rep(seq_along(rt), times = scanN))
-    
-    prec <- ftData$PEPMASS
-    prec <- prec[rdr]
-    scansMetadata <- data.frame(
-        msLevel = 2,
-        collisionEnergy = 30,
-        RT = rt,
-        precursor = prec,
-        Scan = seq_along(rt)
-    )
-    
-    # Note TODO: The MS1 and MS2 should not overlap and be cumulative
-    
-    # Create RawMS1 data
-    rt <- ftData$RTINSECONDS
-    int <-  ftData$PEPMASSINT
-    mz <- ftData$PEPMASS
-    rdr <- order(rt,decreasing = F)
-    rt <- rt[rdr]
-    int <- int[rdr]
-    mz <- mz[rdr]
-    rawMS1 <- data.frame(RT = rt,
-                         int = int,
-                         mz = mz,
-                         peakID = paste0("MS1_", rownames(ftData)[rdr]),
-                         Scan = seq_along(rt))
-    
-    fakePeaksMS1 <- data.frame(
-        mz = mz,
-        RT = rt,
-        int = int,
-        minRT = rt - 5,
-        maxRT = rt + 5,
-        peakID = rownames(ftData)[rdr],
-        isotope = "[M+0]")
-    
-    #Assemble output object
-    msobject <- list(
-        metaData = list(
-            generalMetadata = list(
-                polarity = polarity,
-                acquisitionmode = "DDA"
-            ),
-            scansMetadata = scansMetadata
-        ),
-        processing = list(),
-        rawData = list(
-            MS1 = NULL,
-            MS2 = rawMS2
-        ),
-        peaklist = list(
-            MS1 = fakePeaksMS1
-        ),
-        annotation = list()
-    )
-    
-    return(msobject)
+if (nrow(metadata) < length(files)){
+  stop("Mismatch between files and metadata samples")
+  writeLines("Mismatch between files and metadata samples", con ="/app/Output/error.txt")
 }
 
+msbatch <- batchdataProcessing(files = metadata$sample,
+                               metadata = metadata,
+                               polarity = params$polarity,
+                               dmzagglom = c(params$dmzprecursor_ms1*3, params$dmzprecursor_ms2*3),
+                               drtagglom = c(300,300),
+                               drtclust = c(100,200),
+                               minpeak = c(params$minpeak_ms1, params$minpeak_ms2),
+                               drtgap = 5,
+                               drtminpeak = c(params$drtminpeak_ms1, params$drtminpeak_ms2),
+                               drtmaxpeak = 200,
+                               recurs = c(params$recurs_ms1, params$recurs_ms2),
+                               sb = params$sb,
+                               sn = paramssn,
+                               minint = c(params$minint_ms1, params$minint_ms2),
+                               weight = c(2, 3),
+                               dmzIso = params$dmzprecursor_ms1,
+                               drtIso = params$rttol,
+                               parallel = TRUE,
+                               ncores = ncores)
 
-exportMSPv2 <- function(struct, id, file, whichSpec = NA,extension=".msp") { # solved duplicated entries
-    il <- struct@data@MS2Exp[[id]]@IL
-    ilannot <- il@annotation
-    il <- il@IL
-    MS2Features <- struct@data@MS2Exp[[id]]@Ident$MS2Features
-    charge <- struct@metadata@ExpParam@ion
-    
-    if (is.na(whichSpec)) {
-        whichSpec <- seq_len(nrow(MS2Features))
-    }
-    
-    sink(file = paste0(file, extension))
-    for (i in whichSpec) {
-        ilentry <- MS2Features$ILentry[i]
-        precs <- ilannot[[ilentry]]$metadata
-        precs <- sapply(precs,function(x) unique(x$mass))
-        precs <- unique(as.numeric(unlist(precs)))
-        curss <- MS2Features[i,]
-        for (precMZ in precs){
-            ssdata <- curss$ssdata[[1]]
-            pepint <- sum(ssdata$int)
-            ssdata$int <- 100*ssdata$int/max(ssdata$int)
-            cat("BEGIN IONS\n")
-            cat("TITLE=Entry", i,"Range:", curss$start[[1]], 
-                "-", curss$end[[1]], "\n", sep = "_")
-            cat("RTINSECONDS=", curss$apex[[1]], "\n", 
-                sep = "")
-            cat("PEPMASS=", precMZ, "\n", sep = "")
-            cat("PEPMASSINT=", pepint, "\n", sep = "")
-            cat("CHARGE=", "1", charge, "\n", sep = "")
-            for (j in seq_len(nrow(ssdata))) {
-                cat(as.numeric(ssdata[j, ]), "\n")
-            }
-            cat("END IONS\n")
-            # cat("\n")
-        }
-    }
-    sink()
-}
-```
-
-
-``` {r}
-#### ROUTINE START ####
-
-if(any(tools::file_ext(params$input_files) == "rds")){
-    rds_path <- params$input_files[which(tools::file_ext(params$input_files) == "rds")[1]] ##Only one RHermesExp can be processed for now
-    myHermes <- readRDS(rds_path)
-    if(!is(myHermes, "RHermesExp")){stop ("Invalid object inside RDS, must be RHermesExp")}
-    exportMSPv2(myHermes, 1, "./spectra", extension=".mgf")
-    lf <- "./spectra.mgf"
-    r <- MGFToLipidMS(lf)
-}
-
-if(params$ion_mode == "positive"){
-    #### POSITIVE ION ####
-    idpos <- idPOS(r,
-               ppm_precursor = params$ppm_error,
-               ppm_products = params$ppm_error,
-               rttol = 1,
-               coelCutoff = 0.0,
-               lipidClasses = c("MG", "LPC", "LPE", "PC", "PCo", 
-                                "PCp", "PE", "PEo", "PEp", "PG",
-                                "PI", "Sph", "SphP", "Cer", "AcylCer", "CerP",
-                                "SM", "Carnitines", "CE", "DG", "TG"),
-               verbose = TRUE
-    )
-    x <- idpos$annotation$results
-    y <- do.call("rbind",lapply(seq(nrow(x)), function(i) LipidMS:::getFormula(x[i,])))
-    x <- cbind(x,y)
-    lipidres <- x
-    precursors <- idpos$metaData$scansMetadata
-    ms2data <- idpos$rawData$MS2
-    detailsAnnotation <- idpos$annotation$detailsAnnotation
+###################
+# Alignment
+if (ncores > 6){
+ncores2 <- 6
 } else {
-    #### NEGATIVE ION ####
-    idneg <- idNEG(r,
-                   ppm_precursor = params$ppm_error,
-                   ppm_products = params$ppm_error,
-                   rttol = 1,
-                   coelCutoff = 0.0,
-                   lipidClasses = c("FA", "FAHFA", "LPC", "LPE", "LPG", "LPI",
-                                    "LPS", "PC", "PCo", "PCp", "PE", "PEo", "PEp", 
-                                    "PG", "PI", "PS", "Sph", "SphP", "Cer", "CerP", 
-                                    "AcylCer", "SM", "CL", "BA"),
-                   verbose = TRUE)
-    
-    x <- idneg$annotation$results
-    y <- do.call("rbind",lapply(seq(nrow(x)), function(i) LipidMS:::getFormula(x[i,])))
-    x <- cbind(x,y)
-    
-    lipidres <- x
-    precursors <- idneg$metaData$scansMetadata
-    ms2data <- idneg$rawData$MS2
-    detailsAnnotation <- idneg$annotation$detailsAnnotation
+ncores2 <- ncores
+}
+msbatch <- alignmsbatch(msbatch, dmz = params$dmzprecursor_ms1*2, drt = params$drtgroup*2, span = 0.4, 
+                        minsamplesfrac = 0.75, parallel = TRUE, ncores = ncores2, global_gb = Inf)
+
+###################
+# Grouping
+msbatch <- groupmsbatch(msbatch, dmz = params$dmzprecursor_ms1*2, drtagglom = params$drtgroup*2,
+                        drt = params$drtgroup, minsamplesfrac = params$minsamplesfracgroup, 
+                        parallel = TRUE, ncores = ncores2, global_gb = Inf)
+
+
+#####################
+# Fill missing peaks
+msbatch <- fillpeaksmsbatch(msbatch)
+
+###################
+# Lipid Annotation
+msbatch <- annotatemsbatch(msbatch,
+                           ppm_precursor = params$dmzprecursor,
+                           ppm_products = params$dmzproducts,
+                           rttol = params$rttol,
+                           coelCutoff = params$coelcutoff,
+                           lipidClassesPos = c("MG", "LPC", "LPE", "PC", "PCo", "PCp", "PE", "PEo", "PEp", "PG",
+                                "PI", "Sph", "SphP", "Cer", "AcylCer", "CerP", "SM", "Carnitines", "CE", "DG", "TG"),
+                           lipidClassesNeg = c("FA", "FAHFA", "LPC", "LPE", "LPG", "LPI", "LPS", "PC", "PCo", 
+                                              "PCp", "PE", "PEo", "PEp", "PG", "PI", "PS", "Sph", "SphP", 
+                                                "Cer", "CerP", "AcylCer", "SM", "CL", "BA"),
+                           parallel = TRUE, ncores = ncores, global_gb = Inf)
+
+for (m in 1:length(msbatch$msobjects)){
+  if (msbatch$msobjects[[m]]$metaData$generalMetadata$acquisitionmode %in% c("DIA", "DDA")){
+      msbatch$msobjects[[m]] <- plotLipids(msbatch$msobjects[[m]])
+  }
 }
 
+peaklist <- msbatch$features
+peaklistNoIso <- peaklist[peaklist$isotope %in% c("", "[M+0]"),]
 
-#### ANNOTATION SCORE TUNING ####
+writexl::write_xlsx(peaklistNoIso, path = "peaklist.xlsx")
 
-lipidres$FragAnnot <- 0
-for(u in names(detailsAnnotation)){
-    temp <- detailsAnnotation[[u]]
-    nms <- names(temp)
-    tempA <- tempB <- tempC <- tempD <- data.frame()
-    if(length(temp)>0){
-        tempA <- temp$candidates
-        if("chainfragments"%in%nms){
-            tempB <- temp$chainfragments
-        }
-        if("classfragments"%in%nms){
-            tempC <- temp$classfragments
-        }
-        idx <- which(lipidres$Class==u)
-        for(i in idx){
-            if(lipidres$confidenceLevel[i]=="MS-only"){next}
-            j <- which(tempA$peakID==lipidres$peakID[i])
-            tempa <- tempA[j,]
-            nohit <- F
-            mzhit <- c()
-            if("chainfragments"%in%nms){
-                tempb <- tempB[[j]]
-                if(length(tempb)>0 | is.data.frame(tempb)){
-                    tempbscore <- sapply(tempb,
-                                         function(x) round(sum(x$coelScore,na.rm =T),3))
-                    if(!is.list(tempb)){wait}
-                    fas <- strsplit(lipidres$FAcomp[i],split=" ")[[1]]
-                    fascheck <- sapply(tempb,function(x) all(x$cb%in%fas))
-                    tempb <- tempb[which(tempbscore==lipidres$Score[i] & fascheck)]
-                    if(is.list(tempb) & !is.data.frame(tempb)){tempb <- do.call("rbind",tempb)}
-                    if(length(tempb)>0){
-                        mzhit <- c(mzhit,unique(tempb$mz))
-                        nohit <- T
-                    }
-                }
-            }
-            if("classfragments"%in%nms){
-                tempc <- tempC[[j]]
-                if(is.list(tempc) & !is.data.frame(tempc)){tempc <- do.call("rbind",tempc)}
-                if(nrow(tempc)>0){
-                    mzhit <- c(mzhit,unique(tempc$mz))
-                    nohit <- T
-                }
-            }
-            if(nohit){
-                fragannot <- 0
-                if(0%in%mzhit){fragannot <- 0.5}
-                fragannot <- fragannot+length(unique(mzhit[mzhit>0]))
-                lipidres$FragAnnot[i] <- fragannot 
-            }
-        }
+###################
+#  plots
+cat("\nPlots")
+pdf("RTdevplot.pdf")
+rtdevplot(msbatch)
+  rtdevplot(msbatch, colorbygroup = FALSE)
+dev.off()
+pdf("TIC.pdf", height = 7, width = 10)
+plotticmsbatch(msbatch)
+plotticmsbatch(msbatch, colorbygroup = FALSE)
+dev.off()
+
+for (s in 1:length(msbatch$msobjects)){
+  if (msbatch$msobjects[[s]]$metaData$generalMetadata$acquisitionmode %in% c("DIA", "DDA")){
+    if (msbatch$msobjects[[s]]$metaData$generalMetadata$acquisitionmode == "DIA"){
+      height <- 7
+    } else {
+      height <- 9
     }
+    pdf(file = gsub(".mzXML", "_plots.pdf", msbatch$msobjects[[s]]$metaData$generalMetadata$file), 
+        width = 8, height = height)
+    if (length(msbatch$msobjects[[s]]$annotation$plots) > 0){
+      for (pl in 1:length(msbatch$msobjects[[s]]$annotation$plots)){
+        print(msbatch$msobjects[[s]]$annotation$plots[[pl]])
+      }
+    }
+    dev.off()
+  }
 }
-
-MS2Features <- myHermes@data@MS2Exp[[1]]@Ident$MS2Features
-
-lipidres$MS2Feature <- sapply(seq(nrow(lipidres)),function(i){
-    l <- lipidres[i,]
-    idx <- which(abs(MS2Features$precmass-l$mz) < 0.05 &
-                     abs(MS2Features$apex-l$RT) < 0.05 )
-    # idx
-    ssum <- sapply(MS2Features$ssdata[idx],function(x) sum(x$int)) #undo MGF int
-    idx <- idx[which.min(abs(ssum-l$int))]
-    idx
-})
-MS2Features$LipidMS.Results <- lapply(seq(nrow(MS2Features)),function(x) list())
-for(u in unique(lipidres$MS2Feature)){
-    m <- MS2Features[u,]
-    r <- lipidres[which(lipidres$MS2Feature==u),]
-    MS2Features$LipidMS.Results[[u]] <- r
-}
-MS2Features$LipidMS.Results[sapply(MS2Features$LipidMS.Results,length)==0] <- 
-    "No significant hits"
-
-myHermes@data@MS2Exp[[1]]@Ident$MS2Features <- MS2Features
-
-dir.create("./Output")
-write.csv(lipidres, "./Output/LipidMS_results.csv")
-saveRDS(myHermes, "./Output/HermesObject.rds")
 ```
 
