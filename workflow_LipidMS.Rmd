@@ -28,14 +28,14 @@ params:
 
 
 ```{r}
-files <- data.frame(sample = files)
+files <- data.frame(sample = params$input_files)
 metadata <- merge(metadata, files, by = "sample")
   
-ncores <- min(length(input_files), parallel::detectCores())
+ncores <- min(length(params$input_files), parallel::detectCores())
 
-if (nrow(metadata) < length(files)){
+if (nrow(metadata) != nrow(files)){
   stop("Mismatch between files and metadata samples")
-  writeLines("Mismatch between files and metadata samples", con ="/app/Output/error.txt")
+  #writeLines("Mismatch between files and metadata samples", con ="/app/Output/error.txt")
 }
 
 msbatch <- batchdataProcessing(files = metadata$sample,
