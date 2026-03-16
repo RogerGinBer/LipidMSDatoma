@@ -22,7 +22,7 @@ params:
     rttol: 6
     coelcutoff: 0.7
     input_files: "test.mZXML"
-    metadata: "metadata.csv
+    metadata: "metadata.csv"
     
 ---
 
@@ -102,16 +102,16 @@ for (m in 1:length(msbatch$msobjects)){
 peaklist <- msbatch$features
 peaklistNoIso <- peaklist[peaklist$isotope %in% c("", "[M+0]"),]
 
-writexl::write_xlsx(peaklistNoIso, path = "peaklist.xlsx")
+writexl::write_xlsx(peaklistNoIso, path = "/app/Output/peaklist.xlsx")
 
 ###################
 #  plots
 cat("\nPlots")
-pdf("RTdevplot.pdf")
+pdf("/app/Output/RTdevplot.pdf")
 rtdevplot(msbatch)
   rtdevplot(msbatch, colorbygroup = FALSE)
 dev.off()
-pdf("TIC.pdf", height = 7, width = 10)
+pdf("/app/Output/TIC.pdf", height = 7, width = 10)
 plotticmsbatch(msbatch)
 plotticmsbatch(msbatch, colorbygroup = FALSE)
 dev.off()
@@ -123,7 +123,7 @@ for (s in 1:length(msbatch$msobjects)){
     } else {
       height <- 9
     }
-    pdf(file = gsub(".mzXML", "_plots.pdf", msbatch$msobjects[[s]]$metaData$generalMetadata$file), 
+    pdf(file = paste0("/app/Output/", gsub(".mzXML", "_plots.pdf", msbatch$msobjects[[s]]$metaData$generalMetadata$file)), 
         width = 8, height = height)
     if (length(msbatch$msobjects[[s]]$annotation$plots) > 0){
       for (pl in 1:length(msbatch$msobjects[[s]]$annotation$plots)){
