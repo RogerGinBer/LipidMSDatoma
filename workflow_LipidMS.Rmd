@@ -28,7 +28,7 @@ params:
 
 
 ```{r}
-files <- data.frame(sample = params$input_files)
+files <- data.frame(sample = basename(params$input_files), path = params$input_files)
 metadata <- read.csv(params$metadata)
 metadata <- merge(metadata, files, by = "sample")
   
@@ -39,7 +39,7 @@ if (nrow(metadata) != nrow(files)){
   #writeLines("Mismatch between files and metadata samples", con ="/app/Output/error.txt")
 }
 
-msbatch <- batchdataProcessing(files = metadata$sample,
+msbatch <- batchdataProcessing(files = metadata$path,
                                metadata = metadata,
                                polarity = params$polarity,
                                dmzagglom = c(params$dmzprecursor_ms1*3, params$dmzprecursor_ms2*3),
