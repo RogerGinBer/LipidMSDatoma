@@ -40,9 +40,14 @@ tasks:
     autoscaling:
       ram:
         base: 7200
-        max: 389120
+        max: 250000
+        multipliers:
+          vcpu: 3800
       vcpu:
         base: 2
-        max: 96
-        density:
-          fast: 999
+        max: 64
+        multipliers:
+          num_files:
+          - value: 1
+            inputs:
+              - input_files
