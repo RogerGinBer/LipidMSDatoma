@@ -25,3 +25,24 @@ tasks:
         max: 96
         density:
           fast: 999
+
+  originalwf:
+    type: RMarkdown
+    config:
+      script: /app/workflow_LipidMS.Rmd
+      output_folder: /app/Output
+      upload_output_folder: true
+      upload_output_zip: false
+      zip_filename: Output
+      input_mapping:
+        input_files: input_files
+        metadata: metadata
+    autoscaling:
+      ram:
+        base: 7200
+        max: 389120
+      vcpu:
+        base: 2
+        max: 96
+        density:
+          fast: 999
