@@ -40,7 +40,7 @@ if (nrow(metadata) != nrow(files)){
   stop("Mismatch between files and metadata samples")
   #writeLines("Mismatch between files and metadata samples", con ="/app/Output/error.txt")
 }
-
+metadata$sample <- metadata$path #Once we checked all file names, use actual paths
 msbatch <- batchdataProcessing(files = metadata$path,
                                metadata = metadata,
                                polarity = params$polarity,
