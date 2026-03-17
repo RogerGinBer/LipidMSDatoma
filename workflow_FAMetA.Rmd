@@ -79,34 +79,34 @@ fadata <- summarizeResults(fadata = fadata,
 # Save results
 #==============================================================================#
 
-saveRDS(fadata, file="app/Output/fadata.rds")
+saveRDS(fadata, file="/app/Output/fadata.rds")
 
 #==============================================================================#
 # Outputs
 #==============================================================================#
-write.csv(fadata$results$results, file = "app/Output/results.csv", row.names=FALSE)
-write.csv(fadata$results$summary, file = "app/Output/summary.csv")
+write.csv(fadata$results$results, file = "/app/Output/results.csv", row.names=FALSE)
+write.csv(fadata$results$summary, file = "/app/Output/summary.csv")
 
 write.table(rbind(fadata$metadata$sampletype, 
                   colnames(fadata$mid),
                   fadata$mid),
-            file = "app/Output/mid.csv", sep=",", col.names = FALSE)
+            file = "/app/Output/mid.csv", sep=",", col.names = FALSE)
 
 if ("elongation" %in% names(fadata)){
   write.table(rbind(fadata$metadata$sampletype, 
                     colnames(fadata$synthesis$predictedValues),
                     fadata$synthesis$predictedValues,
                     fadata$elongation$predictedValues),
-              file = "app/Output/predictedmid.csv", sep=",", col.names = FALSE)
+              file = "/app/Output/predictedmid.csv", sep=",", col.names = FALSE)
 } else {
   write.table(rbind(fadata$metadata$sampletype, 
                     colnames(fadata$synthesis$predictedValues),
                     fadata$synthesis$predictedValues),
-              file = "app/Output/predictedmid.csv", sep=",", col.names = FALSE)
+              file = "/app/Output/predictedmid.csv", sep=",", col.names = FALSE)
 }
 
 
-pdf("app/Output/relativepoolsizeRaw.pdf", 
+pdf("/app/Output/relativepoolsizeRaw.pdf", 
     height = 10+length(unique(fadata$fattyacids$Compound))*0.01)
 print(fadata$results$heatmaps$relativepoolsize$raw$plot)
 dev.off()
@@ -114,10 +114,10 @@ dev.off()
 write.table(rbind(fadata$metadata$sampletype, 
                   colnames(fadata$results$heatmaps$relativepoolsize$raw$values),
                   fadata$results$heatmaps$relativepoolsize$raw$values),
-            file = "app/Output/relativepoolsizeRaw.csv", sep=",", col.names = FALSE)
+            file = "/app/Output/relativepoolsizeRaw.csv", sep=",", col.names = FALSE)
 
 
-pdf("app/Output/relativepoolsizeZscore.pdf", 
+pdf("/app/Output/relativepoolsizeZscore.pdf", 
     height = 10+length(unique(fadata$fattyacids$Compound))*0.01)
 print(fadata$results$heatmaps$relativepoolsize$zscore$plot)
 dev.off()
@@ -125,10 +125,10 @@ dev.off()
 write.table(rbind(fadata$metadata$sampletype, 
                   colnames(fadata$results$heatmaps$relativepoolsize$raw$values),
                   fadata$results$heatmaps$relativepoolsize$zscore$values),
-            file = "relativepoolsizeZscore.csv", sep=",", col.names = FALSE)
+            file = "/app/Output/relativepoolsizeZscore.csv", sep=",", col.names = FALSE)
 
 if ("log2FC" %in% names(fadata$results$heatmaps$relativepoolsize)){
-  pdf("app/Output/relativepoolsizeLog2FC.pdf", 
+  pdf("/app/Output/relativepoolsizeLog2FC.pdf", 
       height = 10+length(unique(fadata$fattyacids$Compound))*0.01)
   print(fadata$results$heatmaps$relativepoolsize$log2FC$plot)
   dev.off()
@@ -136,10 +136,10 @@ if ("log2FC" %in% names(fadata$results$heatmaps$relativepoolsize)){
   write.table(rbind(fadata$metadata$sampletype, 
                     colnames(fadata$results$heatmaps$relativepoolsize$log2FC$values),
                     fadata$results$heatmaps$relativepoolsize$log2FC$values),
-              file = "app/Output/relativepoolsizeLog2FC.csv", sep=",", col.names = FALSE)
+              file = "/app/Output/relativepoolsizeLog2FC.csv", sep=",", col.names = FALSE)
 }
 
-pdf("app/Output/resultsRaw_endogenouslySynthesized.pdf", 
+pdf("/app/Output/resultsRaw_endogenouslySynthesized.pdf", 
     height = 10+length(unique(fadata$fattyacids$Compound))*0.01)
 print(fadata$results$heatmaps$synthesized$raw$plot)
 dev.off()
@@ -147,12 +147,12 @@ dev.off()
 write.table(rbind(fadata$metadata$sampletype, 
                   colnames(fadata$results$heatmaps$synthesized$raw$values),
                   fadata$results$heatmaps$synthesized$raw$values),
-            file = "app/Output/resultsRaw_endogenouslySynthesized.csv", sep=",", 
+            file = "/app/Output/resultsRaw_endogenouslySynthesized.csv", sep=",", 
             col.names = FALSE)
 
 
 if ("log2FC" %in% names(fadata$results$heatmaps$synthesized)){
-  pdf("app/Output/resultsLog2FC_endogenouslySynthesized.pdf", 
+  pdf("/app/Output/resultsLog2FC_endogenouslySynthesized.pdf", 
       height = 10+length(unique(fadata$fattyacids$Compound))*0.01)
   print(fadata$results$heatmaps$synthesized$log2FC$plot)
 dev.off()
@@ -160,7 +160,7 @@ dev.off()
 write.table(rbind(fadata$metadata$sampletype, 
                   colnames(fadata$results$heatmaps$synthesized$log2FC$values),
                     fadata$results$heatmaps$synthesized$log2FC$values),
-              file = "app/Output/resultsLog2FC_endogenouslySynthesized.csv", sep=",", 
+              file = "/app/Output/resultsLog2FC_endogenouslySynthesized.csv", sep=",", 
               col.names = FALSE)
 }
 
@@ -168,7 +168,7 @@ write.table(rbind(fadata$metadata$sampletype,
 ###################
 # Synthesis analysis
 
-pdf("app/Output/plotsSynthesis.pdf")
+pdf("/app/Output/plotsSynthesis.pdf")
 for (f in 1:length(fadata$synthesis$plots)){
   for (s in 1:length(fadata$synthesis$plots[[f]])){
     print(fadata$synthesis$plots[[f]][[s]])
@@ -179,13 +179,13 @@ dev.off()
 write.table(rbind(fadata$metadata$sampletype, 
                   colnames(fadata$results$allparameters$S16),
                   fadata$results$allparameters$S16),
-            file = "app/Output/S16.csv", sep=",", col.names = FALSE)
+            file = "/app/Output/S16.csv", sep=",", col.names = FALSE)
 
 ###################
 # Elongation analysis
 
 if ("elongation" %in% names(fadata)){
-  pdf("app/Output/plotsElongation.pdf")
+  pdf("/app/Output/plotsElongation.pdf")
   for (f in 1:length(fadata$elongation$plots)){
     for (s in 1:length(fadata$elongation$plots[[f]])){
       print(fadata$elongation$plots[[f]][[s]])
@@ -196,22 +196,22 @@ if ("elongation" %in% names(fadata)){
   write.table(rbind(fadata$metadata$sampletype, 
                     colnames(fadata$results$allparameters$E1),
                     fadata$results$allparameters$E1),
-              file = "app/Output/E1.csv", sep=",", col.names = FALSE)
+              file = "/app/Output/E1.csv", sep=",", col.names = FALSE)
   write.table(rbind(fadata$metadata$sampletype, 
                     colnames(fadata$results$allparameters$E2),
                     fadata$results$allparameters$E2),
-              file = "app/Output/E2.csv", sep=",", col.names = FALSE)
+              file = "/app/Output/E2.csv", sep=",", col.names = FALSE)
   write.table(rbind(fadata$metadata$sampletype, 
                     colnames(fadata$results$allparameters$E3),
                     fadata$results$allparameters$E3),
-              file = "app/Output/E3.csv", sep=",", col.names = FALSE)
+              file = "/app/Output/E3.csv", sep=",", col.names = FALSE)
   write.table(rbind(fadata$metadata$sampletype, 
                     colnames(fadata$results$allparameters$E4),
                     fadata$results$allparameters$E4),
-              file = "app/Output/E4.csv", sep=",", col.names = FALSE)
+              file = "/app/Output/E4.csv", sep=",", col.names = FALSE)
   write.table(rbind(fadata$metadata$sampletype, 
                     colnames(fadata$results$allparameters$E5),
                     fadata$results$allparameters$E5),
-              file = "app/Output/E5.csv", sep=",", col.names = FALSE)
+              file = "/app/Output/E5.csv", sep=",", col.names = FALSE)
 }
 ```
