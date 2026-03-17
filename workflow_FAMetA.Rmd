@@ -50,7 +50,7 @@ fadata <- synthesisAnalysis(fadata = fadata, R2Thr = 0.95,
 ###################
 # Elongation analysis
 
-if (runelongation){
+if (params$runelongation){
   fadata <- elongationAnalysis(fadata = fadata, 
                                R2Thr = 0.95, 
                                maxiter = params$maxiterelo,
@@ -62,7 +62,7 @@ if (runelongation){
 ###################
 # Desaturation analysis
 
-if (rundesaturation){
+if (params$rundesaturation){
   fadata <- desaturationAnalysis(fadata = fadata,
                                  SEThr = 0.05)
 }
