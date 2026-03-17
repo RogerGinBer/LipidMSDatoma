@@ -4,29 +4,55 @@
       "label": "Parameters",
       "parameters": [
         {
-          "key": "dmzprecursor",
-          "label": "Precursor mass error (ppm)",
+          "key": "resolution",
+          "label": "Mass resolution",
           "type": "InputNumber",
-          "model": 10,
+          "model": 140000,
           "bind": {
             "min" : 0,
-            "max" : 50,
-            "minFractionDigits" : 0,
-            "maxFractionDigits" : 2
-
+            "max" : 1000000
           }
         },
+               {
+          "key": "correct13C",
+          "label": "Correct for natural 13C abundance",
+          "type": "InputSwitch",
+          "model": true
+        },
         {
-          "key": "polarity",
-          "label": "Ion polarity mode",
-          "type": "Dropdown",
-          "model": "positive",
+          "key": "purity13C",
+          "label": "13C Tracer purity",
+          "type": "InputNumber",
+          "model": 0.99,
           "bind": {
-            "options" : [
-              {"label": "Positive Mode (+)", "value": "positive"},
-              {"label": "Negative Mode (-)", "value": "negative"}
-            ]
-          }
+            "step" : 0.001,
+            "min" : 0,
+            "max" : 1
+          },
+          "enable": "parameters[key = \"correct13C\"].model"
+        },
+        {
+          "key": "runelongation",
+          "label": "Run elongation pathway analysis",
+          "type": "InputSwitch",
+          "model": true
+        },
+        {
+          "key": "maxiterelo",
+          "label": "Maximum iterations for elongation calculation",
+          "type": "InputNumber",
+          "model": 10000,
+          "bind": {
+            "min" : 1000,
+            "max" : 100000
+          },
+          "enable": "parameters[key = \"runelongation\"].model"
+        },
+        {
+          "key": "rundesaturation",
+          "label": "Run desaturation pathway analysis",
+          "type": "InputSwitch",
+          "model": true
         }
       ]
     }
