@@ -92,6 +92,7 @@ COPY --from=builder /usr/local/lib/python3.11/site-packages/ /usr/local/lib/pyth
 COPY datomaconfig.yml /app/
 COPY annotateLipids.Rmd /app/
 COPY workflow_LipidMS.Rmd /app/
+COPY workflow_FAMetA.Rmd /app/
 
 # Necessary files for running your tool on the Datoma infrastructure
 COPY install_jobrunner.py /app/install_jobrunner.py
