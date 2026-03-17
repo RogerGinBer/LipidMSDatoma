@@ -1,0 +1,221 @@
+---
+title: "FAMetAdatoma"
+author: "Maribel Alcoriza"
+date: "2026-03-16"
+output: html_document
+params:
+    input_table: "test.csv"
+    correct13C: TRUE
+    resolution: 140000
+    purity13C: 0.99
+    blankgroup: "blank"
+    externalnormalization: "IS"
+    runelongation: TRUE
+    maxiterelo: 10000
+    rundesaturation: TRUE
+    controlgroup: "Control"
+---
+
+
+```{r}
+library(FAMetA)
+#==============================================================================#
+# Read fadata
+#==============================================================================#
+fadata <- readfadatafile(params$input_table)
+
+#==============================================================================#
+# Data correction
+#==============================================================================#
+externalnormalization <- params$externalnormalization[params$externalnormalization != ""]
+fadata <- dataCorrection(fadata, correct13C = params$correct13C, 
+                         resolution = params$resolution, purity13C = params$purity13C,
+                         blankgroup = params$blankgroup, 
+                         externalnormalization = externalnormalization)
+
+#==============================================================================#
+# Metabolic analysis
+#==============================================================================#
+
+###################
+# Synthesis analysis
+
+if ("D1" %in% colnames(fadata$metadata)){D1 <- as.numeric(fadata$metadata$D1)}else{D1<-NA}
+if ("D2" %in% colnames(fadata$metadata)){D2 <- as.numeric(fadata$metadata$D2)}else{D2<-NA}
+if ("P" %in% colnames(fadata$metadata)){P <- as.numeric(fadata$metadata$P)}else{P<-NA}
+
+fadata <- synthesisAnalysis(fadata = fadata, R2Thr = 0.95, 
+                            maxiter = 1000,
+                            maxconvergence = 100, 
+                            startpoints = 5,
+                            D1 = D1, D2 = D2, P = P, propagateD = TRUE)
+
+
+###################
+# Elongation analysis
+
+if (runelongation){
+  fadata <- elongationAnalysis(fadata = fadata, 
+                               R2Thr = 0.95, 
+                               maxiter = params$maxiterelo,
+                               maxconvergence = 100, 
+                               startpoints = 5, 
+                               D2Thr = 0.1)
+}
+
+###################
+# Desaturation analysis
+
+if (rundesaturation){
+  fadata <- desaturationAnalysis(fadata = fadata,
+                                 SEThr = 0.05)
+}
+
+
+###################
+# Summarize results
+fadata <- summarizeResults(fadata = fadata, 
+                           controlgroup = params$controlgroup)
+
+
+
+#==============================================================================#
+# Save results
+#==============================================================================#
+
+save(fadata, file="app/Output/fadata.rda")
+
+#==============================================================================#
+# Outputs
+#==============================================================================#
+write.csv(fadata$results$results, file = "app/Output/results.csv", row.names=FALSE)
+write.csv(fadata$results$summary, file = "app/Output/summary.csv")
+
+write.table(rbind(fadata$metadata$sampletype, 
+                  colnames(fadata$mid),
+                  fadata$mid),
+            file = "app/Output/mid.csv", sep=",", col.names = FALSE)
+
+if ("elongation" %in% names(fadata)){
+  write.table(rbind(fadata$metadata$sampletype, 
+                    colnames(fadata$synthesis$predictedValues),
+                    fadata$synthesis$predictedValues,
+                    fadata$elongation$predictedValues),
+              file = "app/Output/predictedmid.csv", sep=",", col.names = FALSE)
+} else {
+  write.table(rbind(fadata$metadata$sampletype, 
+                    colnames(fadata$synthesis$predictedValues),
+                    fadata$synthesis$predictedValues),
+              file = "app/Output/predictedmid.csv", sep=",", col.names = FALSE)
+}
+
+
+pdf("app/Output/relativepoolsizeRaw.pdf", 
+    height = 10+length(unique(fadata$fattyacids$Compound))*0.01)
+print(fadata$results$heatmaps$relativepoolsize$raw$plot)
+dev.off()
+
+write.table(rbind(fadata$metadata$sampletype, 
+                  colnames(fadata$results$heatmaps$relativepoolsize$raw$values),
+                  fadata$results$heatmaps$relativepoolsize$raw$values),
+            file = "app/Output/relativepoolsizeRaw.csv", sep=",", col.names = FALSE)
+
+
+pdf("app/Output/relativepoolsizeZscore.pdf", 
+    height = 10+length(unique(fadata$fattyacids$Compound))*0.01)
+print(fadata$results$heatmaps$relativepoolsize$zscore$plot)
+dev.off()
+
+write.table(rbind(fadata$metadata$sampletype, 
+                  colnames(fadata$results$heatmaps$relativepoolsize$raw$values),
+                  fadata$results$heatmaps$relativepoolsize$zscore$values),
+            file = "relativepoolsizeZscore.csv", sep=",", col.names = FALSE)
+
+if ("log2FC" %in% names(fadata$results$heatmaps$relativepoolsize)){
+  pdf("app/Output/relativepoolsizeLog2FC.pdf", 
+      height = 10+length(unique(fadata$fattyacids$Compound))*0.01)
+  print(fadata$results$heatmaps$relativepoolsize$log2FC$plot)
+  dev.off()
+  
+  write.table(rbind(fadata$metadata$sampletype, 
+                    colnames(fadata$results$heatmaps$relativepoolsize$log2FC$values),
+                    fadata$results$heatmaps$relativepoolsize$log2FC$values),
+              file = "app/Output/relativepoolsizeLog2FC.csv", sep=",", col.names = FALSE)
+}
+
+pdf("app/Output/resultsRaw_endogenouslySynthesized.pdf", 
+    height = 10+length(unique(fadata$fattyacids$Compound))*0.01)
+print(fadata$results$heatmaps$synthesized$raw$plot)
+dev.off()
+
+write.table(rbind(fadata$metadata$sampletype, 
+                  colnames(fadata$results$heatmaps$synthesized$raw$values),
+                  fadata$results$heatmaps$synthesized$raw$values),
+            file = "app/Output/resultsRaw_endogenouslySynthesized.csv", sep=",", 
+            col.names = FALSE)
+
+
+if ("log2FC" %in% names(fadata$results$heatmaps$synthesized)){
+  pdf("app/Output/resultsLog2FC_endogenouslySynthesized.pdf", 
+      height = 10+length(unique(fadata$fattyacids$Compound))*0.01)
+  print(fadata$results$heatmaps$synthesized$log2FC$plot)
+dev.off()
+  
+write.table(rbind(fadata$metadata$sampletype, 
+                  colnames(fadata$results$heatmaps$synthesized$log2FC$values),
+                    fadata$results$heatmaps$synthesized$log2FC$values),
+              file = "app/Output/resultsLog2FC_endogenouslySynthesized.csv", sep=",", 
+              col.names = FALSE)
+}
+
+
+###################
+# Synthesis analysis
+
+pdf("app/Output/plotsSynthesis.pdf")
+for (f in 1:length(fadata$synthesis$plots)){
+  for (s in 1:length(fadata$synthesis$plots[[f]])){
+    print(fadata$synthesis$plots[[f]][[s]])
+  }
+}
+dev.off()
+
+write.table(rbind(fadata$metadata$sampletype, 
+                  colnames(fadata$results$allparameters$S16),
+                  fadata$results$allparameters$S16),
+            file = "app/Output/S16.csv", sep=",", col.names = FALSE)
+
+###################
+# Elongation analysis
+
+if ("elongation" %in% names(fadata)){
+  pdf("app/Output/plotsElongation.pdf")
+  for (f in 1:length(fadata$elongation$plots)){
+    for (s in 1:length(fadata$elongation$plots[[f]])){
+      print(fadata$elongation$plots[[f]][[s]])
+    }
+  }
+  dev.off()
+  
+  write.table(rbind(fadata$metadata$sampletype, 
+                    colnames(fadata$results$allparameters$E1),
+                    fadata$results$allparameters$E1),
+              file = "app/Output/E1.csv", sep=",", col.names = FALSE)
+  write.table(rbind(fadata$metadata$sampletype, 
+                    colnames(fadata$results$allparameters$E2),
+                    fadata$results$allparameters$E2),
+              file = "app/Output/E2.csv", sep=",", col.names = FALSE)
+  write.table(rbind(fadata$metadata$sampletype, 
+                    colnames(fadata$results$allparameters$E3),
+                    fadata$results$allparameters$E3),
+              file = "app/Output/E3.csv", sep=",", col.names = FALSE)
+  write.table(rbind(fadata$metadata$sampletype, 
+                    colnames(fadata$results$allparameters$E4),
+                    fadata$results$allparameters$E4),
+              file = "app/Output/E4.csv", sep=",", col.names = FALSE)
+  write.table(rbind(fadata$metadata$sampletype, 
+                    colnames(fadata$results$allparameters$E5),
+                    fadata$results$allparameters$E5),
+              file = "app/Output/E5.csv", sep=",", col.names = FALSE)
+}
+```
