@@ -8,12 +8,9 @@ params:
     correct13C: TRUE
     resolution: 140000
     purity13C: 0.99
-    blankgroup: "blank"
-    externalnormalization: "IS"
     runelongation: TRUE
     maxiterelo: 10000
     rundesaturation: TRUE
-    controlgroup: "Control"
 ---
 
 
@@ -23,20 +20,19 @@ library(FAMetA)
 # Read fadata
 #==============================================================================#
 fadata <- readfadatafile(params$input_table)
+fadata$metadata$sampletype <- tolower((fadata$metadata$sampletype))
 
 #==============================================================================#
 # Data correction
 #==============================================================================#
-externalnormalization <- params$externalnormalization[params$externalnormalization != ""]
 fadata <- dataCorrection(fadata, correct13C = params$correct13C, 
                          resolution = params$resolution, purity13C = params$purity13C,
-                         blankgroup = params$blankgroup, 
-                         externalnormalization = externalnormalization)
+                         blankgroup = "blank", 
+                         externalnormalization = c())
 
 #==============================================================================#
 # Metabolic analysis
 #==============================================================================#
-
 ###################
 # Synthesis analysis
 
@@ -75,7 +71,7 @@ if (rundesaturation){
 ###################
 # Summarize results
 fadata <- summarizeResults(fadata = fadata, 
-                           controlgroup = params$controlgroup)
+                           controlgroup = "control13cglc")
 
 
 
@@ -83,7 +79,7 @@ fadata <- summarizeResults(fadata = fadata,
 # Save results
 #==============================================================================#
 
-save(fadata, file="app/Output/fadata.rda")
+saveRDS(fadata, file="app/Output/fadata.rds")
 
 #==============================================================================#
 # Outputs
