@@ -17,14 +17,15 @@ tasks:
       input_mapping:
         input_files: input_files
     autoscaling:
-      ram:
-        base: 7200
-        max: 389120
-      vcpu:
-        base: 2
-        max: 96
-        density:
-          fast: 999
+      default:
+        ram:
+          base: 7200
+          max: 389120
+        vcpu:
+          base: 2
+          max: 96
+          density:
+            fast: 999
 
   originalwf:
     type: RMarkdown
@@ -38,19 +39,20 @@ tasks:
         input_files: input_files
         metadata: metadata
     autoscaling:
-      ram:
-        base: 7200
-        max: 250000
-        multipliers:
-          vcpu: 3800
-      vcpu:
-        base: 2
-        max: 64
-        multipliers:
-          num_files:
-          - value: 1
-            inputs:
-              - input_files
+      default:
+        ram:
+          base: 0
+          max: 250000
+          multipliers:
+            vcpu: 3800
+        vcpu:
+          base: 2
+          max: 64
+          multipliers:
+            num_files:
+            - value: 1
+              inputs:
+                - input_files
 
   fameta:
     type: RMarkdown
@@ -63,12 +65,13 @@ tasks:
       input_mapping:
         input_table: input_table
     autoscaling:
-      ram:
-        base: 7500
-        max: 250000
-        multipliers:
-          vcpu: 3800
-      vcpu:
-        base: 2
-        max: 64
+      default:
+        ram:
+          base: 0
+          max: 250000
+          multipliers:
+            vcpu: 3800
+        vcpu:
+          base: 2
+          max: 64
 
