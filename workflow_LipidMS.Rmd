@@ -44,7 +44,7 @@ metadata$sample <- metadata$path #Once we checked all file names, use actual pat
 msbatch <- batchdataProcessing(files = metadata$path,
                                metadata = metadata,
                                polarity = params$polarity,
-                               dmzagglom = c(params$dmzprecursor_ms1*3, params$dmzprecursor_ms2*3),
+                               dmzagglom = c(params$dmzprecursor*3, params$dmzproducts*3),
                                drtagglom = c(300,300),
                                drtclust = c(100,200),
                                minpeak = c(params$minpeak_ms1, params$minpeak_ms2),
@@ -56,7 +56,7 @@ msbatch <- batchdataProcessing(files = metadata$path,
                                sn = params$sn,
                                minint = c(params$minint_ms1, params$minint_ms2),
                                weight = c(2, 3),
-                               dmzIso = params$dmzprecursor_ms1,
+                               dmzIso = params$dmzprecursor,
                                drtIso = params$rttol,
                                parallel = TRUE,
                                ncores = ncores)
@@ -68,12 +68,12 @@ ncores2 <- 6
 } else {
 ncores2 <- ncores
 }
-msbatch <- alignmsbatch(msbatch, dmz = params$dmzprecursor_ms1*2, drt = params$drtgroup*2, span = 0.4, 
+msbatch <- alignmsbatch(msbatch, dmz = params$dmzprecursor, drt = params$drtgroup*2, span = 0.4, 
                         minsamplesfrac = 0.75, parallel = TRUE, ncores = ncores2, global_gb = Inf)
 
 ###################
 # Grouping
-msbatch <- groupmsbatch(msbatch, dmz = params$dmzprecursor_ms1*2, drtagglom = params$drtgroup*2,
+msbatch <- groupmsbatch(msbatch, dmz = params$dmzprecursor, drtagglom = params$drtgroup*2,
                         drt = params$drtgroup, minsamplesfrac = params$minsamplesfracgroup, 
                         parallel = TRUE, ncores = ncores2, global_gb = Inf)
 
