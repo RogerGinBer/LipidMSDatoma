@@ -69,13 +69,13 @@ ncores2 <- 6
 ncores2 <- ncores
 }
 msbatch <- alignmsbatch(msbatch, dmz = params$dmzprecursor, drt = params$drtgroup*2, span = 0.4, 
-                        minsamplesfrac = 0.75, parallel = TRUE, ncores = ncores2, global_gb = Inf)
+                        minsamplesfrac = 0.75, parallel = FALSE, ncores = ncores2, global_gb = Inf)
 
 ###################
 # Grouping
 msbatch <- groupmsbatch(msbatch, dmz = params$dmzprecursor, drtagglom = params$drtgroup*2,
                         drt = params$drtgroup, minsamplesfrac = params$minsamplesfracgroup, 
-                        parallel = TRUE, ncores = ncores2, global_gb = Inf)
+                        parallel = FALSE, ncores = ncores2, global_gb = Inf)
 
 
 #####################
@@ -94,7 +94,7 @@ msbatch <- annotatemsbatch(msbatch,
                            lipidClassesNeg = c("FA", "FAHFA", "LPC", "LPE", "LPG", "LPI", "LPS", "PC", "PCo", 
                                               "PCp", "PE", "PEo", "PEp", "PG", "PI", "PS", "Sph", "SphP", 
                                                 "Cer", "CerP", "AcylCer", "SM", "CL", "BA"),
-                           parallel = TRUE, ncores = ncores, global_gb = Inf)
+                           parallel = FALSE, ncores = ncores, global_gb = Inf)
 
 for (m in 1:length(msbatch$msobjects)){
   if (msbatch$msobjects[[m]]$metaData$generalMetadata$acquisitionmode %in% c("DIA", "DDA")){
