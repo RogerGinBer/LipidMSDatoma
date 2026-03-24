@@ -46,11 +46,11 @@ tasks:
           multipliers:
             vcpu: 3800
         vcpu:
-          base: 2
+          base: 8
           max: 64
           multipliers:
             num_files:
-            - value: 1
+            - value: 0
               inputs:
                 - input_files
 
