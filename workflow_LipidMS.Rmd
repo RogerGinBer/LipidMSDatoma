@@ -63,7 +63,10 @@ msbatch <- batchdataProcessing(files = metadata$path,
                                ncores = ncores,
                                global_gb = Inf,
                                verbose = TRUE)
+```
 
+
+```{r}
 ###################
 # Alignment
 if (ncores > 4){
@@ -75,20 +78,28 @@ message("Starting alignment")
 msbatch <- alignmsbatch(msbatch, dmz = params$dmzprecursor, drt = params$drtgroup*2, span = 0.4, 
                         minsamplesfrac = 0.75, parallel = FALSE, ncores = ncores2, global_gb = Inf,
                         verbose = TRUE)
+```
 
+
+```{r}
 ###################
 # Grouping
 message("Starting grouping")
 msbatch <- groupmsbatch(msbatch, dmz = params$dmzprecursor, drtagglom = params$drtgroup*2,
                         drt = params$drtgroup, minsamplesfrac = params$minsamplesfracgroup, 
                         parallel = FALSE, ncores = ncores2, global_gb = Inf, verbose = TRUE)
+```
 
 
+```{r}
 #####################
 # Fill missing peaks
 message("Starting filling")
 msbatch <- fillpeaksmsbatch(msbatch)
+```
 
+
+```{r}
 ###################
 # Lipid Annotation
 message("Starting annotation")
@@ -103,7 +114,7 @@ if (packageVersion("LipidMS") <= "3.1.2") {
                            lipidClassesNeg = c("FA", "FAHFA", "LPC", "LPE", "LPG", "LPI", "LPS", "PC", "PCo", 
                                               "PCp", "PE", "PEo", "PEp", "PG", "PI", "PS", "Sph", "SphP", 
                                                 "Cer", "CerP", "AcylCer", "SM", "CL", "BA"),
-                           parallel = TRUE, ncores = ncores2, global_gb = Inf)
+                           parallel = FALSE, ncores = ncores2, global_gb = Inf)
 } else {
   msbatch <- annotatemsbatch(msbatch,
                            ppm_precursor = params$dmzprecursor,
@@ -115,7 +126,7 @@ if (packageVersion("LipidMS") <= "3.1.2") {
                            lipidClassesNeg = c("FA", "FAHFA", "LPC", "LPE", "LPG", "LPI", "LPS", "PC", "PCo", 
                                               "PCp", "PE", "PEo", "PEp", "PG", "PI", "PS", "Sph", "SphP", 
                                                 "Cer", "CerP", "AcylCer", "SM", "CL", "BA"),
-                           parallel = TRUE, ncores = ncores2, global_gb = Inf)
+                           parallel = FALSE, ncores = ncores2, global_gb = Inf)
 }
 
 for (m in 1:length(msbatch$msobjects)){
@@ -128,7 +139,10 @@ peaklist <- msbatch$features
 peaklistNoIso <- peaklist[peaklist$isotope %in% c("", "[M+0]"),]
 
 writexl::write_xlsx(peaklistNoIso, path = "/app/Output/peaklist.xlsx")
+```
 
+
+```{r}
 ###################
 #  plots
 cat("\nPlots")
