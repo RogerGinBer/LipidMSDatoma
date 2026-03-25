@@ -34,7 +34,8 @@ files <- data.frame(sample = basename(params$input_files), path = params$input_f
 metadata <- read.csv(params$metadata)
 metadata <- merge(metadata, files, by = "sample")
   
-ncores <- min(length(params$input_files), parallel::detectCores())
+# ncores <- min(length(params$input_files), parallel::detectCores())
+ncores <- 6
 
 if (nrow(metadata) != nrow(files)){
   stop("Mismatch between files and metadata samples")
@@ -59,23 +60,26 @@ msbatch <- batchdataProcessing(files = metadata$path,
                                dmzIso = params$dmzprecursor,
                                drtIso = params$rttol,
                                parallel = TRUE,
-                               ncores = ncores)
+                               ncores = ncores,
+                               global_gb = Inf,
+                               verbose = TRUE)
 
 ###################
 # Alignment
-if (ncores > 6){
-ncores2 <- 6
+if (ncores > 4){
+ncores2 <- 4
 } else {
 ncores2 <- ncores
 }
 msbatch <- alignmsbatch(msbatch, dmz = params$dmzprecursor, drt = params$drtgroup*2, span = 0.4, 
-                        minsamplesfrac = 0.75, parallel = FALSE, ncores = ncores2, global_gb = Inf)
+                        minsamplesfrac = 0.75, parallel = FALSE, ncores = ncores2, global_gb = Inf,
+                        verbose = TRUE)
 
 ###################
 # Grouping
 msbatch <- groupmsbatch(msbatch, dmz = params$dmzprecursor, drtagglom = params$drtgroup*2,
                         drt = params$drtgroup, minsamplesfrac = params$minsamplesfracgroup, 
-                        parallel = FALSE, ncores = ncores2, global_gb = Inf)
+                        parallel = FALSE, ncores = ncores2, global_gb = Inf, verbose = TRUE)
 
 
 #####################
@@ -84,7 +88,20 @@ msbatch <- fillpeaksmsbatch(msbatch)
 
 ###################
 # Lipid Annotation
-msbatch <- annotatemsbatch(msbatch,
+if (packageVersion("LipidMS") <= "3.1.2") {
+  msbatch <- annotatemsbatch(msbatch,
+                           ppm_precursor = params$dmzprecursor,
+                           ppm_products = params$dmzproducts,
+                           rttol = params$rttol,
+                           coelCutoff = params$coelcutoff,
+                           lipidClassesPos = c("MG", "LPC", "LPE", "PC", "PCo", "PCp", "PE", "PEo", "PEp", "PG",
+                                "PI", "Sph", "SphP", "Cer", "AcylCer", "CerP", "SM", "Carnitines", "CE", "DG", "TG"),
+                           lipidClassesNeg = c("FA", "FAHFA", "LPC", "LPE", "LPG", "LPI", "LPS", "PC", "PCo", 
+                                              "PCp", "PE", "PEo", "PEp", "PG", "PI", "PS", "Sph", "SphP", 
+                                                "Cer", "CerP", "AcylCer", "SM", "CL", "BA"),
+                           parallel = TRUE, ncores = ncores2, global_gb = Inf)
+} else {
+  msbatch <- annotatemsbatch(msbatch,
                            ppm_precursor = params$dmzprecursor,
                            ppm_products = params$dmzproducts,
                            rttol = params$rttol,
@@ -94,7 +111,8 @@ msbatch <- annotatemsbatch(msbatch,
                            lipidClassesNeg = c("FA", "FAHFA", "LPC", "LPE", "LPG", "LPI", "LPS", "PC", "PCo", 
                                               "PCp", "PE", "PEo", "PEp", "PG", "PI", "PS", "Sph", "SphP", 
                                                 "Cer", "CerP", "AcylCer", "SM", "CL", "BA"),
-                           parallel = FALSE, ncores = ncores, global_gb = Inf)
+                           parallel = TRUE, ncores = ncores2, global_gb = Inf)
+}
 
 for (m in 1:length(msbatch$msobjects)){
   if (msbatch$msobjects[[m]]$metaData$generalMetadata$acquisitionmode %in% c("DIA", "DDA")){
