@@ -71,12 +71,14 @@ ncores2 <- 4
 } else {
 ncores2 <- ncores
 }
+message("Starting alignment")
 msbatch <- alignmsbatch(msbatch, dmz = params$dmzprecursor, drt = params$drtgroup*2, span = 0.4, 
                         minsamplesfrac = 0.75, parallel = FALSE, ncores = ncores2, global_gb = Inf,
                         verbose = TRUE)
 
 ###################
 # Grouping
+message("Starting grouping")
 msbatch <- groupmsbatch(msbatch, dmz = params$dmzprecursor, drtagglom = params$drtgroup*2,
                         drt = params$drtgroup, minsamplesfrac = params$minsamplesfracgroup, 
                         parallel = FALSE, ncores = ncores2, global_gb = Inf, verbose = TRUE)
@@ -84,10 +86,12 @@ msbatch <- groupmsbatch(msbatch, dmz = params$dmzprecursor, drtagglom = params$d
 
 #####################
 # Fill missing peaks
+message("Starting filling")
 msbatch <- fillpeaksmsbatch(msbatch)
 
 ###################
 # Lipid Annotation
+message("Starting annotation")
 if (packageVersion("LipidMS") <= "3.1.2") {
   msbatch <- annotatemsbatch(msbatch,
                            ppm_precursor = params$dmzprecursor,
@@ -144,7 +148,7 @@ for (s in 1:length(msbatch$msobjects)){
     } else {
       height <- 9
     }
-    pdf(file = paste0("/app/Output/", gsub(".mzXML", "_plots.pdf", msbatch$msobjects[[s]]$metaData$generalMetadata$file)), 
+    pdf(file = paste0("/app/Output/", gsub(".mzXML", "_plots.pdf", basename(msbatch$msobjects[[s]]$metaData$generalMetadata$file))), 
         width = 8, height = height)
     if (length(msbatch$msobjects[[s]]$annotation$plots) > 0){
       for (pl in 1:length(msbatch$msobjects[[s]]$annotation$plots)){
